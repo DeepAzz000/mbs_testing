@@ -7,4 +7,4 @@ This project provides a performing automated tests on mobipreshipement.
 Run the following command to execute the tests using pytest:
    
    ```bash
-   pytest test_basic.py
+python -m pytest -s testing_main.py
