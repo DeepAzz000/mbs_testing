@@ -198,4 +198,5 @@ pyrightconfig.json
 *.csv
 *.xlsx
 pytest.ini
+__pycache__
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
