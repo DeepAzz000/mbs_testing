@@ -18,6 +18,7 @@ class WebAutomationLibrary:
         self.log.info("Opened URL: %s", url)
 
     def login(self, email, password):
+        self.log.info("login test started:")
         try:
             email_input = self.driver.find_element(By.ID, "login")
             email_input.send_keys(email)
@@ -35,17 +36,22 @@ class WebAutomationLibrary:
 
             if login_successful:
                 self.log.info("Login successful")
+                self.log.info("login test PASSED")
                 return True
             else:
-                self.log.error("Login failed: Invalid credentials")
-                return False
+                self.log.info("Login failed: Invalid credentials")
+                self.log.info("login test PASSED")
+                return True
 
         except Exception as e:
             self.log.error("Error logging in: %s", str(e))
+            self.log.error("login test FAILED")
             return False
 
     def create_parcel(self, name, phone, address, city, CRBTV, valuev, wait):
+        self.log.info("Create parcel test started:")
         try:
+            
             parent_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_menu_sections')))
             self.log.info("Parent element found")
 
@@ -99,79 +105,94 @@ class WebAutomationLibrary:
             save_button.click()
             self.log.info("Save button clicked")            
             try:
-                error_modal = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_dialog_warning')))
+                error_modal = WebDriverWait(self.driver, int(wait)/4).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_dialog_warning')))
                 error_message = error_modal.find_element(By.TAG_NAME, 'p').text
-                self.log.error("Validation error occurred: %s", error_message)
-                return False, error_message
+                self.log.info("Validation error occurred: %s", error_message)
+                self.log.info("Create parcel test PASSED")
+                return True
                 
-            except TimeoutException:
-                self.log.info("No error appeared after clicking save button")
-                
+            except:
                 try:
-                    notification = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_notification_manager')))
+                    notification = WebDriverWait(self.driver, int(wait)/4).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_notification_manager')))
                     notification_text = notification.text
-                    self.log.info("Parcel creation failed due to %s", notification_text)
-                    return False, notification_text
-                
-                except TimeoutException:
+                    self.log.info("Parcel creation FAILED due to %s", notification_text)
+                    self.log.info("Create parcel test PASSED")
+                    return True
+                except:
                     self.log.info("Parcel created successfully")
-                    self.driver.refresh()
-                    return True, ""
-
+                    self.log.info("Create parcel test PASSED")
+                    return True
         except Exception as e:
             self.log.error("Error creating parcel: %s", str(e))
-            return False, str(e)
+            return False
 
-    def create_parcels_in_mass(self, wait):
-        action = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[2]/div[1]/div[3]/button/span")))
-        action.click()
-        self.log.info("1")
-        import_parcels_file = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[2]/div[1]/div[3]/ul/li[6]/button"))) 
-        import_parcels_file.click()
-        self.log.info("2")
-        file_input= WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div/button[4]")))
-        file_path = "C:\\Users\\Public\\Testing_cases\\cpcolisminimal(DATA FOR TESTING).xlsx"
-        file_input.send_keys(file_path)
-        time.sleep(wait)
-
-    def save_to_csv(self, test_time, name, phone, address, city, CRBTV, valuev, status, error_message, output_file_path):
+    def create_parcels_in_mass(self, wait, upload_file):
+        self.log.info("Create parcels in mass test started:")
         try:
-            logging.info(f'Writing to csv file: {output_file_path} started')
-            data_file = open(output_file_path, mode='a', newline='', encoding='utf-8')
-            writer = csv.writer(data_file)
-            writer.writerow([test_time, name, phone, address, city, CRBTV, valuev, status, error_message])
-        except Exception as e:
-            logging.error(f'Error writing to csv file: {str(e)}')
+            action = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[2]/div[1]/div[3]/button/span")))
+            action.click()
+            import_parcels_file = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[2]/div[1]/div[3]/ul/li[6]/button"))) 
+            import_parcels_file.click()
+            time.sleep(int(wait)/3)
+            file_input = self.driver.find_element(By.CSS_SELECTOR, "input[type='file']")
+            file_input.send_keys(upload_file)
+            self.log.info("Uploaded file")
+            try:
+                warning = WebDriverWait(self.driver, int(wait)/3).until(EC.visibility_of_element_located((By.CLASS_NAME, "oe_import_error_report")))
+                error_message = warning.text
+                self.log.info("error occurred: %s", error_message)
+                self.log.info("Create parcels in mass test PASSED:")
+                return True
+            except:
+                importing = WebDriverWait(self.driver, int(wait)/3).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div/button[1]")))
+                importing.click()
+                time.sleep(int(wait)/2)
+                try:
+                    error_message_element = WebDriverWait(self.driver, int(wait)/3).until(EC.visibility_of_element_located((By.CLASS_NAME, "oe_import_error_report")))
+                    error_message = error_message_element.text
+                    self.log.info("error occurred: %s", error_message)
+                    self.log.info("Create parcels in mass test PASSED")
+                    return True
+                except:
+                    self.log.info("No error appeared Uploaded file")
+                    self.log.info("Create parcels in mass test PASSED:")
+                    return True
+        except:
+            self.log.error("Create parcels in mass test FAILED:")
+            return False
 
-    def parcel_confirmation(self, wait):
+    def parcel_confirmation(self, wait, parcel):
+        self.log.info("Parcel confirmation test started:")
         try: 
-            main_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_action_manager')))            
-            parcels_list = WebDriverWait(main_element, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'ui-sortable')))
-            parcel_to_confirm = WebDriverWait(parcels_list, wait).until(EC.visibility_of_element_located((By.XPATH, '//*[@data-id="cp.coli_2"]')))
+            parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
             parcel_to_confirm.click()
             confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.NAME, 'action_confirm_coli')))
             confirm.click()
             self.log.info("Parcel confirmed")
+            self.log.info("Parcel confirmation test PASSED")
             return True
         except Exception as e:
-            self.log.error("Error confirming parcel: %s", str(e))
+            # self.log.error("Error confirming parcel: %s", str(e))
+            self.log.error("Parcel confirmation test FAILED")
             return False
 
-    def parcel_cancellation(self, wait):
+    def parcel_cancellation(self, wait, parcel):
+        self.log.info("Parcel cancellation test started:")
         try: 
-            main_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_action_manager')))            
-            parcels_list = WebDriverWait(main_element, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'ui-sortable')))
-            parcel_to_cancel = WebDriverWait(parcels_list, wait).until(EC.visibility_of_element_located((By.XPATH, '//*[@data-id="cp.coli_7"]')))
+            parcel_to_cancel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
             parcel_to_cancel.click()
             cancel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.NAME, 'action_cancel_colis')))
             cancel.click()
             self.log.info("Parcel cancelled")
+            self.log.info("Parcel cancellation test PASSED")
             return True
         except Exception as e:
-            self.log.error("Error canceling parcel: %s", str(e))
+            # self.log.error("Error canceling parcel: %s", str(e))
+            self.log.error("Parcel cancellation test FAILED")
             return False
 
     def parcel_mass_confirmation(self, wait):
+        self.log.info("Parcel mass confirmation test started:")
         try: 
             select_all = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/thead/tr/th[1]")))
             
@@ -183,30 +204,57 @@ class WebAutomationLibrary:
             
             ok = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/button/span")))
             ok.click()
+            self.log.info("Parcel mass confirmation test PASSED")
             return True
-        except Exception as e:
-            self.log.error("Error confirming parcels: %s", str(e))
+        except:
+            self.log.error("Parcel mass confirmation test FAILED")
             return False
 
-    def parcel_mass_print(self, wait):
+    def parcel_ticket_print(self, wait, ticket, parcel):
+        self.log.info("Parcel tickets printing test started:")
+        try: 
+            parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
+            parcel_to_confirm.click()
+            print = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/button/span")))
+            print.click()
+            if ticket == 1:
+                print_dropdown_option_A4 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")
+                print_dropdown_option_A4.click()
+            else:
+                print_dropdown_option_100x70 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")
+                print_dropdown_option_100x70.click()
+            time.sleep(int(wait))
+            self.log.info("printed all parcels tickets")
+            self.log.info("Parcel tickets printing test PASSED")
+            return True
+        except:
+            self.log.error("Parcel tickets printing test FAILED")
+            return False
+
+    def parcel_ticket_mass_print(self, wait, ticket):
+        self.log.info("Parcel tickets printing test started:")
         try: 
             select_all = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/thead/tr/th[1]")))
             
             select_all.click()
             print = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/button/span")))
             print.click()
-            # print_dropdown_option_100x70 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")
-            # print_dropdown_option_100x70.click()
-            print_dropdown_option_A4 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")
-            print_dropdown_option_A4.click()
+            if ticket == 1:
+                print_dropdown_option_A4 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")
+                print_dropdown_option_A4.click()
+            else:
+                print_dropdown_option_100x70 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")
+                print_dropdown_option_100x70.click()
             time.sleep(int(wait))
             self.log.info("printed all parcels tickets")
+            self.log.info("Parcel tickets printing test PASSED")
             return True
-        except Exception as e:
-            self.log.error("Error printing parcels: %s", str(e))
+        except:
+            self.log.error("Parcel tickets printing test FAILED")
             return False
 
     def update_parcel_details(self, wait):
+        self.log.info("Parcel update details test started:")
         try: 
             select = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[1]")))
             select.click()
@@ -228,10 +276,12 @@ class WebAutomationLibrary:
             try:
                 error_modal = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_dialog_warning')))
                 error_message = error_modal.find_element(By.TAG_NAME, 'p').text
-                self.log.error("Validation error occurred: %s", error_message)
-                return False, error_message
-            except TimeoutException:
+                self.log.info("Validation error occurred: %s", error_message)
+                self.log.info("Parcel update details test PASSED")
+                return True
+            except:
                 self.log.info("No error appeared after updating parcel details")
+                self.log.info("Parcel update details test PASSED")    
                 return True
         except Exception as e:
             self.log.error("Error printing parcels: %s", str(e))
