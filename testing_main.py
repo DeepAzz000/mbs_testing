@@ -46,9 +46,13 @@ def data():
         "ticket-A4": int(config['ticket']['A4']),
         "ticket-100X70": int(config['ticket']['100X70']),
         "parcel_confirmed" : int(config['parcels']['parcel_confirmed']),
-        "parcel_cancelled" : int(config['parcels']['parcel_cancelled']),
+        "parcel_canceled" : int(config['parcels']['parcel_canceled']),
         "parcel_draft_1" : int(config['parcels']['parcel_draft_1']),
         "parcel_draft_2" : int(config['parcels']['parcel_draft_2']),
+        "one" : int(config['archive']['one']),
+        "many" : int(config['archive']['many']),
+        "message" : config['message']['message_input'],
+        
     }
     return data
 
@@ -71,29 +75,29 @@ def test_login(driver, data):
     web_automation.open(data["url"])
     assert web_automation.login(data["email"], data["wrong_password"])
 
-#CREATE PARCEL(S) TESTS:
+# CREATE PARCEL(S) TESTS:
 def test_create_parcel_base_case(setup_web_automation, data):
     # Base case: the test should pass and return no errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_missing_case(setup_web_automation, data):
+def test_create_parcel_missing_name(setup_web_automation, data):
     # Missing info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["m_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_case1(setup_web_automation, data):
+def test_create_parcel_missing_address(setup_web_automation, data):
     # wrong info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["w_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_case2(setup_web_automation, data):
+def test_create_parcel_wrong_city(setup_web_automation, data):
     # wrong info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["w_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_case3(setup_web_automation, data):
+def test_create_parcel_wrong_crbtv_fc(setup_web_automation, data):
     # wrong info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["w_CRBTV1"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_case4(setup_web_automation, data):
+def test_create_parcel_wrong_crbtv_sc(setup_web_automation, data):
     # wrong info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["w_CRBTV2"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_case5(setup_web_automation, data):
+def test_create_parcel_wrong_value_fc(setup_web_automation, data):
     # wrong info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["w_valuev1"], data["wait"])
-def test_create_parcel_wrong_case6(setup_web_automation, data):
+def test_create_parcel_wrong_value_sc(setup_web_automation, data):
     # wrong info case: the test should pass and return errors
     assert setup_web_automation.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["w_valuev2"], data["wait"])
 def test_create_parcels_in_mass_correct_file(setup_web_automation, data):
@@ -109,28 +113,57 @@ def test_create_parcels_in_mass_incorrect_file3(setup_web_automation, data):
     # Incorrect file case (missing COD): the test should pass and return errors
     assert setup_web_automation.create_parcels_in_mass(data["wait"], data["upload_file_w3"])
 
+# CANCEL PARCEL TESTS:
+def test_cancel_correct_parcel(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.parcel_cancellation(data["wait"], data['parcel_draft_1'])
+def test_cancel_already_cancel_parcel(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.parcel_cancellation(data["wait"], data['parcel_draft_2'])
+def test_cancel_already_confirmed_parcel(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.parcel_cancellation(data["wait"], data['parcel_confirmed'])
+
 # CONFIRM PARCEL(S) TESTS:
 def test_confirm_correct_parcel(setup_web_automation, data):
     # Base case: the test should pass and return no errors
     assert setup_web_automation.parcel_confirmation(data["wait"], data['parcel_draft_1'])
+def test_confirm_already_confirmed_parcel(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.parcel_confirmation(data["wait"], data['parcel_draft_1'])
+def test_confirm_already_canceled_parcel(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.parcel_confirmation(data["wait"], data['parcel_draft_2'])
+
 def test_confirm_in_mass_parcel(setup_web_automation, data):
     #Confirm mass parcels: the list of parcels is mixed between confirmed canceled drafted parcels test should pass
     assert setup_web_automation.parcel_mass_confirmation(data["wait"])
 
-# CANCEL PARCEL(S) TESTS:
-def test_cancel_correct_parcel(setup_web_automation, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation.parcel_cancellation(data["wait"], data['parcel_draft_2'])
-
 # PRINT TICKET(S) TESTS:
-def test_print_parcels_tickets_in_mass(setup_web_automation, data):    
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation.parcel_ticket_mass_print(data["wait"], data['ticket-100X70'])
 def test_print_parcel_ticket(setup_web_automation, data):
     # Base case: the test should pass and return no errors
-    assert setup_web_automation.parcel_ticket_print(data["wait"], data['ticket-A4'], data['parcel_draft_1'])
+    assert setup_web_automation.parcel_ticket_print(data["wait"], data['ticket-100X70'])
+def test_print_parcels_tickets_in_mass(setup_web_automation, data):    
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.parcel_ticket_mass_print(data["wait"], data['ticket-A4'])
 
 # UPDATE PARCEL (S) DETAILS TESTS:
 def test_update_parcel(setup_web_automation, data):
     # Base case: the test should pass and return no errors
     assert setup_web_automation.update_parcel_details(data["wait"])
+
+# ARCHIVE PARCEL(S)
+def test_archive_parcel_confirmed_draft(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.archive_parcel(data["wait"], data["parcel_draft_1"], data["one"])
+def test_archive_parcel_cancelled(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.archive_parcel(data["wait"], data["parcel_draft_2"], data["one"])
+def test_archive_parcel_mixed_parcels(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.archive_parcel(data["wait"], data["parcel_draft_1"], data["many"])
+
+#SEND MESSAGE
+def test_send_message(setup_web_automation, data):
+    # Base case: the test should pass and return no errors
+    assert setup_web_automation.send_message(data["wait"], data["parcel_draft_1"], data["message"])

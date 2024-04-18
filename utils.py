@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import time
-import csv
+import os
 
 class WebAutomationLibrary:
     def __init__(self, driver=None):
@@ -110,7 +110,6 @@ class WebAutomationLibrary:
                 self.log.info("Validation error occurred: %s", error_message)
                 self.log.info("Create parcel test PASSED")
                 return True
-                
             except:
                 try:
                     notification = WebDriverWait(self.driver, int(wait)/4).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_notification_manager')))
@@ -119,9 +118,15 @@ class WebAutomationLibrary:
                     self.log.info("Create parcel test PASSED")
                     return True
                 except:
-                    self.log.info("Parcel created successfully")
-                    self.log.info("Create parcel test PASSED")
-                    return True
+                    self.driver.get("https://dev.mobipreshipement.link/web#action=385&cids=1&menu_id=264&model=cp.coli&view_type=list")
+                    name_check = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[5]")))
+                    name_check_text = name_check.text
+                    if name_check_text == str(name):
+                        self.log.info("Parcel created successfully")
+                        self.log.info("Create parcel test PASSED")
+                        return True
+                    else:
+                        return False   
         except Exception as e:
             self.log.error("Error creating parcel: %s", str(e))
             return False
@@ -155,8 +160,15 @@ class WebAutomationLibrary:
                     return True
                 except:
                     self.log.info("No error appeared Uploaded file")
-                    self.log.info("Create parcels in mass test PASSED:")
-                    return True
+                    self.driver.get("https://dev.mobipreshipement.link/web#action=385&cids=1&menu_id=264&model=cp.coli&view_type=list")
+                    name_check = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[5]")))
+                    name_check_text = name_check.text
+                    if name_check_text == str("random"):
+                        self.log.info("Parcel created successfully")
+                        self.log.info("Create parcel in mass test PASSED")
+                        return True
+                    else:
+                        return False  
         except:
             self.log.error("Create parcels in mass test FAILED:")
             return False
@@ -166,11 +178,25 @@ class WebAutomationLibrary:
         try: 
             parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
             parcel_to_confirm.click()
-            confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.NAME, 'action_confirm_coli')))
-            confirm.click()
-            self.log.info("Parcel confirmed")
-            self.log.info("Parcel confirmation test PASSED")
-            return True
+            try:
+                confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.NAME, 'action_confirm_coli')))
+                confirm.click()
+            except:
+                self.log.info("Parcel cant be confirmed because it is already confirmed or already cancelled")
+                self.log.info("Parcel confirmation test PASSED")
+                return True 
+            time.sleep(int(wait)/2)
+            self.driver.get("https://dev.mobipreshipement.link/web#action=385&cids=1&menu_id=264&model=cp.coli&view_type=list")
+            check = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[12]/span")))
+            check_text = check.text
+            # parcel_id = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[2]")))
+            # parcel_id_text = parcel_id.text
+            if check_text == "Confirmé":
+                self.log.info("Parcel confirmed")
+                self.log.info("Parcel confirmation test PASSED")
+                return True
+            else:
+                return False   
         except Exception as e:
             # self.log.error("Error confirming parcel: %s", str(e))
             self.log.error("Parcel confirmation test FAILED")
@@ -181,11 +207,25 @@ class WebAutomationLibrary:
         try: 
             parcel_to_cancel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
             parcel_to_cancel.click()
-            cancel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.NAME, 'action_cancel_colis')))
-            cancel.click()
-            self.log.info("Parcel cancelled")
-            self.log.info("Parcel cancellation test PASSED")
-            return True
+            try:
+                cancel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.NAME, 'action_cancel_colis')))
+                cancel.click()
+            except:
+                self.log.info("Parcel cant be cancelled because it is already confirmed or already cancelled")
+                self.log.info("Parcel cancellation test PASSED")
+                return True 
+            time.sleep(int(wait)/2)
+            self.driver.get("https://dev.mobipreshipement.link/web#action=385&cids=1&menu_id=264&model=cp.coli&view_type=list")
+            check = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[12]/span")))
+            check_text = check.text
+            # parcel_id = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[2]")))
+            # parcel_id_text = parcel_id.text
+            if check_text == "Annulé":
+                self.log.info("Parcel canceled")
+                self.log.info("Parcel cancellation test PASSED")
+                return True
+            else:
+                return False
         except Exception as e:
             # self.log.error("Error canceling parcel: %s", str(e))
             self.log.error("Parcel cancellation test FAILED")
@@ -195,39 +235,65 @@ class WebAutomationLibrary:
         self.log.info("Parcel mass confirmation test started:")
         try: 
             select_all = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/thead/tr/th[1]")))
-            
             select_all.click()
+            self.log.info("select is clicked")
             action = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[2]/button/span")))
             action.click()
+            self.log.info("action is clicked")
             action_dropdown_option_confirm = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[2]/ul/li[4]/a")
             action_dropdown_option_confirm.click()
+            self.log.info("confirm")
             
             ok = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/button/span")))
             ok.click()
-            self.log.info("Parcel mass confirmation test PASSED")
-            return True
+            time.sleep(wait/2)
+            self.driver.get("https://dev.mobipreshipement.link/web#action=385&cids=1&menu_id=264&model=cp.coli&view_type=list")
+            check = WebDriverWait(self.driver, int(wait)).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[12]/span")))
+            check_text = check.text            
+            if check_text == "Confirmé":
+                self.log.info("Parcel confirmed")
+                self.log.info("Parcel mass confirmed test PASSED")
+                return True
         except:
             self.log.error("Parcel mass confirmation test FAILED")
             return False
 
-    def parcel_ticket_print(self, wait, ticket, parcel):
+    def check_download_status(self):
+        try:
+            self.driver.get("chrome://downloads/")            
+            downloaded_items = self.driver.execute_script("return document.querySelector('downloads-manager').shadowRoot.querySelectorAll('downloads-item')")
+            return len(downloaded_items) > 0
+        except Exception as e:
+            print("Error:", e)
+            return False
+
+    def parcel_ticket_print(self, wait, ticket):
         self.log.info("Parcel tickets printing test started:")
         try: 
-            parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
+            parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[1]/div")))
             parcel_to_confirm.click()
-            print = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/button/span")))
-            print.click()
+            self.log.info("select is clicked")
+            print_button = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/button/span")))
+            print_button.click()
+            self.log.info("print is clicked")
             if ticket == 1:
-                print_dropdown_option_A4 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")
+                print_dropdown_option_A4 = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")))
                 print_dropdown_option_A4.click()
+                self.log.info("print option A4 is clicked")
+                time.sleep(wait)
             else:
-                print_dropdown_option_100x70 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")
+                print_dropdown_option_100x70 = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")))
                 print_dropdown_option_100x70.click()
-            time.sleep(int(wait))
-            self.log.info("printed all parcels tickets")
-            self.log.info("Parcel tickets printing test PASSED")
-            return True
-        except:
+                self.log.info("print option 100x70 is clicked")
+                time.sleep(wait)
+                
+            if self.check_download_status():
+                self.log.info("Downloads completed successfully:")
+                self.log.info("Printed all parcel tickets")
+                self.log.info("Parcel tickets printing test PASSED")
+                return True
+        except Exception as e:
+            self.log.error("%s", e)
             self.log.error("Parcel tickets printing test FAILED")
             return False
 
@@ -235,21 +301,29 @@ class WebAutomationLibrary:
         self.log.info("Parcel tickets printing test started:")
         try: 
             select_all = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/thead/tr/th[1]")))
-            
             select_all.click()
-            print = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/button/span")))
-            print.click()
+            self.log.info("select is clicked")
+            print_button = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/button/span")))
+            print_button.click()
+            self.log.info("print is clicked")
             if ticket == 1:
-                print_dropdown_option_A4 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")
+                print_dropdown_option_A4 = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[2]/a")))
                 print_dropdown_option_A4.click()
+                self.log.info("print option A4 is clicked")
+                time.sleep(wait * 2)
             else:
-                print_dropdown_option_100x70 = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")
+                print_dropdown_option_100x70 = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[1]/ul/li[1]/a")))
                 print_dropdown_option_100x70.click()
-            time.sleep(int(wait))
-            self.log.info("printed all parcels tickets")
-            self.log.info("Parcel tickets printing test PASSED")
-            return True
-        except:
+                self.log.info("print option 100x70 is clicked")
+                time.sleep(wait * 2)
+                
+            if self.check_download_status():
+                self.log.info("Downloads completed successfully:")
+                self.log.info("Printed all parcel tickets")
+                self.log.info("Parcel tickets printing test PASSED")
+                return True
+        except Exception as e:
+            self.log.error("%s", e)
             self.log.error("Parcel tickets printing test FAILED")
             return False
 
@@ -285,4 +359,68 @@ class WebAutomationLibrary:
                 return True
         except Exception as e:
             self.log.error("Error printing parcels: %s", str(e))
+            return False
+
+    def archive_parcel(self, wait, parcel, choice):
+        self.log.info("Parcel mass confirmation test started:")
+        try:
+            if choice == 1:
+                parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]/td[1]/div')))
+                parcel_to_confirm.click()
+            else:
+                select_all = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/table/thead/tr/th[1]")))
+                select_all.click()
+            parcel_id = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]/td[2]"))).text
+            self.log.info("select is clicked")
+            action = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[2]/button/span")))
+            action.click()
+            self.log.info("action is clicked")
+            action_dropdown_option_confirm = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[2]/ul/li[1]/a")
+            action_dropdown_option_confirm.click()
+            self.log.info("archive action clicked")
+            ok = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/button[1]/span")))
+            ok.click()
+            try:
+                warning = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[8]/div/div/div/p")))
+                warning_text = warning.text
+                self.log.info(warning_text)
+                self.log.info("Cannot archive parcel because parcel is already cancelled")
+                return True
+            except:
+                try: 
+                    parcel_id_after = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]/td[2]"))).text
+                    if parcel_id_after == parcel_id:
+                        self.log.error("parcel was not archive")
+                        return False
+                except:
+                    self.log.info("Parcel was successfully archived")
+                return True
+        except Exception as e:
+            self.log.error("%e", e)
+            return False
+
+    def send_message(self, wait, parcel, test_input):
+        self.log.info("Parcel send message test started:")
+        try: 
+            parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]')))
+            parcel_to_confirm.click()
+            send_message = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div/div/button')))
+            send_message.click()
+            input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div[2]/div[4]/div[1]/textarea[1]')))
+            input_field.send_keys(test_input)
+            send = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div[2]/div[5]/div/button')))
+            send.click()
+            try:
+                sent_message = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[2]/div/div[2]/div/div[2]/div/div/div[2]/div/div/div[2]/div[2]/div[2]/div/p[2]'))).text
+                if sent_message == test_input:
+                    self.log.info("Message was written successfully")
+                    return True
+                else:
+                    self.log.info("Message was not written correctly")
+                    return False
+            except:
+                self.log.info("Message was not written")
+                return False
+        except Exception as e:
+            self.log.info("Parcel send message test Failed")
             return False
