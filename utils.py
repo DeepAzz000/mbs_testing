@@ -242,8 +242,7 @@ class WebAutomationLibrary:
             self.log.info("action is clicked")
             action_dropdown_option_confirm = self.driver.find_element(By.XPATH, "/html/body/div[2]/div/div[1]/div[2]/div[1]/div[2]/div[2]/ul/li[4]/a")
             action_dropdown_option_confirm.click()
-            self.log.info("confirm")
-            
+            self.log.info("confirm clicked")
             ok = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/button/span")))
             ok.click()
             time.sleep(wait/2)
@@ -362,7 +361,7 @@ class WebAutomationLibrary:
             return False
 
     def archive_parcel(self, wait, parcel, choice):
-        self.log.info("Parcel mass confirmation test started:")
+        self.log.info("Parcel archive test started:")
         try:
             if choice == 1:
                 parcel_to_confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[2]/div/div[2]/table/tbody/tr[{parcel}]/td[1]/div')))
@@ -422,5 +421,127 @@ class WebAutomationLibrary:
                 self.log.info("Message was not written")
                 return False
         except Exception as e:
-            self.log.info("Parcel send message test Failed")
+            self.log.error("Parcel send message test Failed")
+            return False
+
+    def pickup_parcel(self, wait, parcel_barcode):
+        try:
+            pickup_parcel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/header/nav/ul[2]/li[3]/a/span")))
+            pickup_parcel.click()
+            self.log.info("Clicked on 'Pickup Parcel' button")
+            input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
+            input_field.send_keys(parcel_barcode)
+            self.log.info("Filled the barcode input field")
+            confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/div/footer/button[2]/span")))
+            confirm.click()
+            self.log.info("Confirmed parcel Pickup")
+            notification = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div/div/div"))).text
+            if "invalid" in notification:
+                self.log.info("Received notification: %s", notification)
+                return True
+            elif "déja" in notification:
+                self.log.info("Received notification: %s", notification)
+                return True
+            elif "invalid" not in notification:
+                self.log.info("Received notification: %s", notification)
+                try:
+                    parcel_number = notification.split(': ')[1].split(' ')[0]
+                    colis_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"//span[contains(text(), '{parcel_number}')]")))
+                    parent_div = WebDriverWait(colis_element, wait).until(EC.visibility_of_element_located((By.XPATH, "./ancestor::div[@class='oe_kanban_global_click o_kanban_record']")))
+                    state_element = WebDriverWait(parent_div, wait).until(EC.visibility_of_element_located((By.XPATH, ".//div[@name='state']")))
+                    state = state_element.text
+                    if state == "Ramassé":
+                        self.log.info("Confirmed that parcel is %s", state)
+                    return True
+                except Exception as e:
+                    self.log.error("%s",e)
+                    return False
+            else:
+                self.log.info("Received notification: %s", notification)
+                return False
+        except Exception as e:
+            self.log.error("%s",e)
+            return False
+
+    def load_parcel(self, wait, parcel_barcode):
+        try:
+            load_parcel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/header/nav/ul[2]/li[4]/a/span")))
+            load_parcel.click()
+            self.log.info("Clicked on 'Load Parcel' button")
+            input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
+            input_field.send_keys(parcel_barcode)
+            self.log.info("Filled the barcode input field")
+            confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/div/footer/button[2]/span")))
+            confirm.click() 
+            self.log.info("Confirmed parcel load")
+            notification = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div/div/div"))).text
+            if "invalid" in notification:
+                self.log.info("Received notification: %s", notification)
+                return True
+            elif "déja" in notification:
+                self.log.info("Received notification: %s", notification)
+                return True
+            elif "invalid" not in notification:
+                self.log.info("Received notification: %s", notification)
+                try:
+                    parcel_number = notification.split(': ')[1].split(' ')[0]
+                    colis_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"//span[contains(text(), '{parcel_number}')]")))
+                    parent_div = WebDriverWait(colis_element, wait).until(EC.visibility_of_element_located((By.XPATH, "./ancestor::div[@class='oe_kanban_global_click o_kanban_record']")))
+                    state_element = WebDriverWait(parent_div, wait).until(EC.visibility_of_element_located((By.XPATH, ".//div[@name='state']")))
+                    state = state_element.text
+                    if state == "En cours de livraison":
+                        self.log.info("Confirmed that parcel is %s", state)
+                    return True
+                except Exception as e:
+                    self.log.error("%s",e)
+                    return False
+            
+            else:
+                self.log.info("Received notification: %s", notification)
+                return False
+        except Exception as e:
+            self.log.error("%s",e)
+            return False
+
+    def deliver_parcel(self, wait, parcel_barcode):
+        try:
+            deliver_parcel = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/header/nav/ul[2]/li[5]/a/span")))
+            deliver_parcel.click()
+            self.log.info("Clicked on 'Deliver Parcel' button")
+            input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
+            input_field.send_keys(parcel_barcode)
+            self.log.info("Filled the barcode input field")
+            display = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/main/div/div/div/button/span")))
+            display.click()
+            self.log.info("Displayed parcel details")
+            confirm_button = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-primary span")))
+            confirm_button.click()
+            self.log.info("Confirmed parcel delivery")
+            notification = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div/div/div"))).text
+            if "invalid" in notification:
+                self.log.info("Received notification: %s", notification)
+                return True
+            elif "déja" in notification:
+                self.log.info("Received notification: %s", notification)
+                return True
+            elif "invalid" not in notification:
+                self.log.info("Received notification: %s", notification)
+                try:
+                    parcel_number = notification.split(': ')[1].split(' ')[0]
+                    colis_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"//span[contains(text(), '{parcel_number}')]")))
+                    parent_div = WebDriverWait(colis_element, wait).until(EC.visibility_of_element_located((By.XPATH, "./ancestor::div[@class='oe_kanban_global_click o_kanban_record']")))
+                    state_element = WebDriverWait(parent_div, wait).until(EC.visibility_of_element_located((By.XPATH, ".//div[@name='state']")))
+                    state = state_element.text
+                    if state == "Livré":
+                        self.log.info("Confirmed that parcel is %s", state)
+                    return True
+                except Exception as e:
+                    self.log.error("%s",e)
+                    return False
+            
+            else:
+                self.log.info("Received notification: %s", notification)
+                return False
+        except Exception as e:
+            self.log.error("%s",e)
             return False
