@@ -521,38 +521,42 @@ class WebAutomationLibrary:
             try:
                 confirm_button = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-primary span")))
                 confirm_button.click()
-                self.log.info("Confirmed parcel delivery")
+                self.log.info("Confirm parcel delivery clicked")
                 notification = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div/div/div"))).text
                 if "invalid" in notification:
                     self.log.info("Received notification: %s", notification)
-                    return True
+                    return True, None
                 elif "déja" in notification:
                     self.log.info("Received notification: %s", notification)
-                    return True
+                    return True, None
                 elif "invalid" not in notification:
                     self.log.info("Received notification: %s", notification)
                     try:
                         parcel_number = notification.split(': ')[1].split(' ')[0]
+                        print(parcel_number)
+                        self.driver.refresh()
                         colis_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"//span[contains(text(), '{parcel_number}')]")))
                         parent_div = WebDriverWait(colis_element, wait).until(EC.visibility_of_element_located((By.XPATH, "./ancestor::div[@class='oe_kanban_global_click o_kanban_record']")))
                         state_element = WebDriverWait(parent_div, wait).until(EC.visibility_of_element_located((By.XPATH, ".//div[@name='state']")))
                         state = state_element.text
+                        cod = WebDriverWait(parent_div, wait).until(EC.visibility_of_element_located((By.XPATH, ".//span[@name='cod']")))
+                        cod_element = cod.text
                         if state == "Livré":
                             self.log.info("Confirmed that parcel is %s", state)
-                        return True
+                        return True, cod_element
                     except Exception as e:
-                        self.log.error("%s",e)
-                        return False
+                        self.log.error("error yah: %s",e)
+                        return False, None
                 else:
                     self.log.info("Received notification: %s", notification)
-                    return False
+                    return False, None
             except:
                 invalid = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/header/h4")))
                 self.log.info("Error: %s", invalid.text)
-                return True
+                return True, None
         except Exception as e:
             self.log.error("%s",e)
-            return False
+            return False, None
 
     def return_parcel(self, wait, parcel_barcode):
         try:
@@ -586,7 +590,6 @@ class WebAutomationLibrary:
 
     def check_status(self, wait, parcel_number):
         try:
-            print(parcel_number)
             parcel_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, f"//td[contains(text(), '{parcel_number}')]")))
             
             parent_row = parcel_element.find_element(By.XPATH, "./ancestor::tr")
@@ -601,4 +604,39 @@ class WebAutomationLibrary:
                 return False
         except Exception as e:
             self.log.error("%s", e)
+            return False
+
+    def cod(self, wait, parcel_barcode):
+        self.log.info("Cash delivery test started")
+        try:
+            CRBT_total = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[1]/div/div/div/div/div[1]/span[2]"))).text
+            CRBT_total = CRBT_total.replace(",", ".").replace(" ", "").replace("DH", "")
+            CRBT_total = float(CRBT_total)
+            delivery_success, cod_value = self.deliver_parcel(wait, parcel_barcode)
+            if delivery_success and cod_value != None:
+                self.log.info("Parcel delivery initiated successfully")
+                self.driver.refresh()            
+                self.log.info("Before CRBT total: %f", CRBT_total)            
+                cod_value = cod_value.replace(",", ".").replace(" ", "").replace("DH", "")
+                cod_value = float(cod_value)
+                self.log.info("COD value: %f", cod_value)            
+                total = CRBT_total + cod_value
+                self.log.info("Total CRBT after adding COD: %f", total)
+                updated_CRBT_total = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[1]/div/div/div/div/div[1]/span[2]"))).text
+                updated_CRBT_total = updated_CRBT_total.replace(",", ".").replace(" ", "").replace("DH", "")
+                updated_CRBT_total = float(updated_CRBT_total)
+                self.log.info("After CRBT total: %f", updated_CRBT_total)            
+                if total == updated_CRBT_total:
+                    self.log.info("Total CRBT after adding COD matches the displayed CRBT total")
+                    return True
+                else:
+                    self.log.error("Total CRBT after adding COD does not match the displayed CRBT total")
+                    self.log.info("Total CRBT after adding COD: %f", total)
+                    self.log.info("Displayed CRBT total: %f", updated_CRBT_total)
+                    return False
+            else:
+                self.log.info("Parcel already delivered")
+                return True
+        except Exception as e:
+            self.log.error("Error: %s", e)
             return False

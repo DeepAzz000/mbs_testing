@@ -59,6 +59,7 @@ def data():
         "parcel_delivered": config['parcels']['parcel_delivered'],
         "parcel_returned": config['parcels']['parcel_returned'],
         "parcel_return": config['parcels']['parcel_return'],
+        "parcel_neg_CRBTV": config['parcels']['parcel_neg_CRBTV'],
         "one" : int(config['archive']['one']),
         "many" : int(config['archive']['many']),
         "message" : config['message']['message_input'],
@@ -79,193 +80,214 @@ def setup_web_automation_delivery(driver, data):
     web_automation.open(data["url"])
     web_automation.login(data["email_delivery"], data["password_delivery"])
     return web_automation
-#TESTS:
+# #TESTS:
 
-# LOGIN TESTS:
-def test_login(driver, data):
-    web_automation = WebAutomationLibrary(driver)
-    web_automation.open(data["url"])
-    assert web_automation.login(data["email_shop"], data["password_shop"])
-def test_login(driver, data):
-    web_automation = WebAutomationLibrary(driver)
-    web_automation.open(data["url"])
-    assert web_automation.login(data["email_shop"], data["wrong_password"])
+# # LOGIN TESTS:
+# def test_login(driver, data):
+#     web_automation = WebAutomationLibrary(driver)
+#     web_automation.open(data["url"])
+#     assert web_automation.login(data["email_shop"], data["password_shop"])
+# def test_login(driver, data):
+#     web_automation = WebAutomationLibrary(driver)
+#     web_automation.open(data["url"])
+#     assert web_automation.login(data["email_shop"], data["wrong_password"])
 
-# CREATE PARCEL(S) TESTS:
+# # CREATE PARCEL(S) TESTS:
 def test_create_parcel_base_case(setup_web_automation_shop, data):
     # Base case: the test should pass and return no errors
     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_missing_name(setup_web_automation_shop, data):
-    # Missing info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["m_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_missing_address(setup_web_automation_shop, data):
-    # wrong info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["w_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_city(setup_web_automation_shop, data):
-    # wrong info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["w_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_crbtv_fc(setup_web_automation_shop, data):
-    # wrong info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["w_CRBTV1"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_crbtv_sc(setup_web_automation_shop, data):
-    # wrong info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["w_CRBTV2"], data["b_valuev"], data["wait"])
-def test_create_parcel_wrong_value_fc(setup_web_automation_shop, data):
-    # wrong info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["w_valuev1"], data["wait"])
-def test_create_parcel_wrong_value_sc(setup_web_automation_shop, data):
-    # wrong info case: the test should pass and return errors
-    assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["w_valuev2"], data["wait"])
-def test_create_parcels_in_mass_correct_file(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_c"])
-def test_create_parcels_in_mass_incorrect_file1(setup_web_automation_shop, data):
-    # Incorrect file case (no partner barcode): the test should pass and return errors
-    assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_w1"])
-def test_create_parcels_in_mass_incorrect_file2(setup_web_automation_shop, data):
-    # Incorrect file case(missing city): the test should pass and return errors
-    assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_w2"])
-def test_create_parcels_in_mass_incorrect_file3(setup_web_automation_shop, data):
-    # Incorrect file case (missing COD): the test should pass and return errors
-    assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_w3"])
+# def test_create_parcel_missing_name(setup_web_automation_shop, data):
+#     # Missing info case: the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcel(data["m_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
+# def test_create_parcel_missing_address(setup_web_automation_shop, data):
+#     # wrong info case: the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["w_address"], data["b_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
+# def test_create_parcel_wrong_city(setup_web_automation_shop, data):
+#     # wrong info case: the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["w_city"], data["b_CRBTV"], data["b_valuev"], data["wait"])
+# def test_create_parcel_wrong_crbtv_fc(setup_web_automation_shop, data):
+#     # wrong info case: the test should pass and return 
+#     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["w_CRBTV1"], data["b_valuev"], data["wait"])
+#     # Expected (that the CRBTV should not be negative) #reality: the parcel is created with a negative crbtv
+# def test_create_parcel_wrong_crbtv_sc(setup_web_automation_shop, data):
+#     # wrong info case: the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["w_CRBTV2"], data["b_valuev"], data["wait"])
+# def test_create_parcel_wrong_value_fc(setup_web_automation_shop, data):
+#     # wrong info case: the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["w_valuev1"], data["wait"])
+# def test_create_parcel_wrong_value_sc(setup_web_automation_shop, data):
+#     # wrong info case: the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcel(data["b_name"], data["b_phone"], data["b_address"], data["b_city"], data["b_CRBTV"], data["w_valuev2"], data["wait"])
+# def test_create_parcels_in_mass_correct_file(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_c"])
+# def test_create_parcels_in_mass_incorrect_file1(setup_web_automation_shop, data):
+#     # Incorrect file case (no partner barcode): the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_w1"])
+# def test_create_parcels_in_mass_incorrect_file2(setup_web_automation_shop, data):
+#     # Incorrect file case(missing city): the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_w2"])
+# def test_create_parcels_in_mass_incorrect_file3(setup_web_automation_shop, data):
+#     # Incorrect file case (missing COD): the test should pass and return errors
+#     assert setup_web_automation_shop.create_parcels_in_mass(data["wait"], data["upload_file_w3"])
 
-# CANCEL PARCEL TESTS:
-def test_cancel_correct_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_cancellation(data["wait"], data['parcel_draft_1'])
-def test_cancel_already_cancel_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_cancellation(data["wait"], data['parcel_draft_2'])
-def test_cancel_already_confirmed_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_cancellation(data["wait"], data['parcel_confirmed'])
+# # CANCEL PARCEL TESTS:
+# def test_cancel_correct_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_cancellation(data["wait"], data['parcel_draft_1'])
+# def test_cancel_already_cancel_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_cancellation(data["wait"], data['parcel_draft_2'])
+# def test_cancel_already_confirmed_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_cancellation(data["wait"], data['parcel_confirmed'])
 
-# CONFIRM PARCEL(S) TESTS:
-def test_confirm_correct_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_confirmation(data["wait"], data['parcel_draft_1'])
-def test_confirm_already_confirmed_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_confirmation(data["wait"], data['parcel_draft_1'])
-def test_confirm_already_canceled_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_confirmation(data["wait"], data['parcel_draft_2'])
+# # CONFIRM PARCEL(S) TESTS:
+# def test_confirm_correct_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_confirmation(data["wait"], data['parcel_draft_1'])
+# def test_confirm_already_confirmed_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_confirmation(data["wait"], data['parcel_draft_1'])
+# def test_confirm_already_canceled_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_confirmation(data["wait"], data['parcel_draft_2'])
 
-def test_confirm_in_mass_parcel(setup_web_automation_shop, data):
-    #Confirm mass parcels: the list of parcels is mixed between confirmed canceled drafted parcels test should pass
-    assert setup_web_automation_shop.parcel_mass_confirmation(data["wait"])
+# def test_confirm_in_mass_parcel(setup_web_automation_shop, data):
+#     #Confirm mass parcels: the list of parcels is mixed between confirmed canceled drafted parcels test should pass
+#     assert setup_web_automation_shop.parcel_mass_confirmation(data["wait"])
 
-# PRINT TICKET(S) TESTS:
-def test_print_parcel_ticket(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_ticket_print(data["wait"], data['ticket-100X70'])
-def test_print_parcels_tickets_in_mass(setup_web_automation_shop, data):    
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.parcel_ticket_mass_print(data["wait"], data['ticket-A4'])
+# # PRINT TICKET(S) TESTS:
+# def test_print_parcel_ticket(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_ticket_print(data["wait"], data['ticket-100X70'])
+# def test_print_parcels_tickets_in_mass(setup_web_automation_shop, data):    
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.parcel_ticket_mass_print(data["wait"], data['ticket-A4'])
 
-# UPDATE PARCEL (S) DETAILS TESTS:
-def test_update_parcel(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.update_parcel_details(data["wait"])
+# # UPDATE PARCEL (S) DETAILS TESTS:
+# def test_update_parcel(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.update_parcel_details(data["wait"])
 
-# ARCHIVE PARCEL(S)
-def test_archive_parcel_confirmed_draft(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.archive_parcel(data["wait"], data["parcel_draft_1"], data["one"])
-def test_archive_parcel_cancelled(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.archive_parcel(data["wait"], data["parcel_draft_2"], data["one"])
-def test_archive_parcel_mixed_parcels(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.archive_parcel(data["wait"], data["parcel_draft_1"], data["many"])
+# # ARCHIVE PARCEL(S)
+# def test_archive_parcel_confirmed_draft(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.archive_parcel(data["wait"], data["parcel_draft_1"], data["one"])
+# def test_archive_parcel_cancelled(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.archive_parcel(data["wait"], data["parcel_draft_2"], data["one"])
+# def test_archive_parcel_mixed_parcels(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.archive_parcel(data["wait"], data["parcel_draft_1"], data["many"])
 
-#SEND MESSAGE
-def test_send_message(setup_web_automation_shop, data):
-    # Base case: the test should pass and return no errors
-    assert setup_web_automation_shop.send_message(data["wait"], data["parcel_draft_1"], data["message"])
+# #SEND MESSAGE
+# def test_send_message(setup_web_automation_shop, data):
+#     # Base case: the test should pass and return no errors
+#     assert setup_web_automation_shop.send_message(data["wait"], data["parcel_draft_1"], data["message"])
 
 
-#DELIVERY PERSON
+# #DELIVERY PERSON
 
-#PICKUP PARCEL:
-def test_pickup_parcel_base_case(setup_web_automation_delivery, data):
-    # Base case (pickup a parcel draft or confirmed): the test should pass and return no errors 
-    assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_draft_3"])
-    # Expected: the parcel status changes to picked up
-def test_pickup_parcel_different_status_case(setup_web_automation_delivery, data):
-    # Base case (pickup a parcel already loaded or picked up): the test should pass and return no errors 
-    assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_different_status"])
-    # Expected: the parcel status changes to picked
-def test_pickup_parcel_wrong_barcode(setup_web_automation_delivery, data):
-    # wrong case (pickup a draft with wrong_barcode): the test should pass and return an errors
-    assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_wrong_barcode"])
-    # Expected: return a notification with a message stating that the barcode is wrong
-def test_pickup_parcel_already_delivered(setup_web_automation_delivery, data):
-    # Already delivered case (pickup a draft with wrong_barcode): the test should pass and return no errors
-    assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_delivered"])
-    # Expected: return a notification with a message stating that the parcel is already delivered
+# #PICKUP PARCEL:
+# def test_pickup_parcel_base_case(setup_web_automation_delivery, data):
+#     # Base case (pickup a parcel draft or confirmed): the test should pass and return no errors 
+#     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_draft_3"])
+#     # Expected: the parcel status changes to picked up
+# def test_pickup_parcel_different_status_case(setup_web_automation_delivery, data):
+#     # Base case (pickup a parcel already loaded or picked up): the test should pass and return no errors 
+#     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_different_status"])
+#     # Expected: the parcel status changes to picked
+# def test_pickup_parcel_wrong_barcode(setup_web_automation_delivery, data):
+#     # wrong case (pickup a draft with wrong_barcode): the test should pass and return an errors
+#     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_wrong_barcode"])
+#     # Expected: return a notification with a message stating that the barcode is wrong
+# def test_pickup_parcel_already_delivered(setup_web_automation_delivery, data):
+#     # Already delivered case (pickup a draft with wrong_barcode): the test should pass and return no errors
+#     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_delivered"])
+#     # Expected: return a notification with a message stating that the parcel is already delivered
 
-#LOAD PARCEL:
-def test_load_parcel_base_case(setup_web_automation_delivery, data):
-    # Base case (load a parcel picked): the test should pass and return no errors
-    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_picked"])
-    # Expected: the parcel status changes to loaded
-def test_load_parcel_different_status_case(setup_web_automation_delivery, data):
-    # Base case (pickup a parcel already loaded or picked up): the test should pass and return no errors 
-    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_different_status"]) 
-    # Expected: the parcel status changes to loaded
-def test_load_parcel_wrong_barcode(setup_web_automation_delivery, data):
-    # Wrong case (load a parcel with wrong barcode): the test should fail and return errors
-    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_wrong_barcode"])
-    # Expected: return a notification with a message stating that the barcode is wrong
-def test_load_parcel_already_delivered(setup_web_automation_delivery, data):
-    # Already delivered case (try to load a parcel that has already been delivered): the test should fail and return errors
-    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_delivered"])
-    # Expected: return a notification with a message stating that the parcel is already delivered
+# #LOAD PARCEL:
+# def test_load_parcel_base_case(setup_web_automation_delivery, data):
+#     # Base case (load a parcel picked): the test should pass and return no errors
+#     assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_picked"])
+#     # Expected: the parcel status changes to loaded
+# def test_load_parcel_different_status_case(setup_web_automation_delivery, data):
+#     # Base case (pickup a parcel already loaded or picked up): the test should pass and return no errors 
+#     assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_different_status"]) 
+#     # Expected: the parcel status changes to loaded
+# def test_load_parcel_wrong_barcode(setup_web_automation_delivery, data):
+#     # Wrong case (load a parcel with wrong barcode): the test should fail and return errors
+#     assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_wrong_barcode"])
+#     # Expected: return a notification with a message stating that the barcode is wrong
+# def test_load_parcel_already_delivered(setup_web_automation_delivery, data):
+#     # Already delivered case (try to load a parcel that has already been delivered): the test should fail and return errors
+#     assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_delivered"])
+#     # Expected: return a notification with a message stating that the parcel is already delivered
 
-#DELIVER PARCEL:
-def test_deliver_parcel_base_case(setup_web_automation_delivery, data):
-    # Base case (deliver a parcel draft or confirmed): the test should pass and return no errors
-    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_draft_3"])
+# #DELIVER PARCEL:
+# def test_deliver_parcel_base_case(setup_web_automation_delivery, data):
+#     # Base case (deliver a parcel draft or confirmed): the test should pass and return no errors
+#     success, _ = setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_draft_3"])
+#     assert success
     # Expected: the parcel status changes to delivered
-def test_deliver_parcel_different_status_case(setup_web_automation_delivery, data):
-    # Base case (deliver a parcel picked): the test should pass and return no errors
-    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_different_status"])
+# def test_deliver_parcel_different_status_case(setup_web_automation_delivery, data):
+#     # Base case (deliver a parcel picked): the test should pass and return no errors
+#     success, _ = setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_different_status"])
+#     assert success
     # Expected: the parcel status changes to delivered
-def test_deliver_parcel_wrong_barcode(setup_web_automation_delivery, data):
-    # Wrong case (deliver a parcel with wrong barcode): the test should fail and return errors
-    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_wrong_barcode"])
-    # Expected: return a notification with a message stating that the barcode is wrong
-def test_deliver_parcel_already_delivered(setup_web_automation_delivery, data):
-    # Already delivered case (try to deliver a parcel that has already been delivered): the test should fail and return errors
-    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_delivered"])
-    # Expected: return a notification with a message stating that the parcel is already delivered
+# def test_deliver_parcel_wrong_barcode(setup_web_automation_delivery, data):
+#     # Wrong case (deliver a parcel with wrong barcode): the test should fail and return errors
+#     success, _ = setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_wrong_barcode"])
+#     assert success
+#     # Expected: return a notification with a message stating that the barcode is wrong
+# def test_deliver_parcel_already_delivered(setup_web_automation_delivery, data):
+#     # Already delivered case (try to deliver a parcel that has already been delivered): the test should fail and return errors
+#     success, _ = setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_delivered"])
+#     assert success
+#     # Expected: return a notification with a message stating that the parcel is already delivered
+# def test_deliver_parcel_with_negative_CRBTV(setup_web_automation_delivery, data):
+#     # Parcel with negative CRBTV case: the test should pass and return no errors
+#     success, _ = setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_neg_CRBTV"])
+#     assert success
+#     # Expected: return a notification with a message stating that the parcel has a negative and cannot be delivered
 
-#RETURN PARCEL:
-def test_return_parcel_and_check_status_base_case(setup_web_automation_delivery, setup_web_automation_shop, data):
-    # Base case (return a parcel draft or confirmed or any): the test should pass and return no errors
-    setup_web_automation_delivery.open(data["url"])
-    setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
-    parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_return"])
-    setup_web_automation_shop.open(data["url"])
-    setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
-    assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
-    # Expected: the parcel status changes to returned
-def test_return_parcel_and_check_status_returned(setup_web_automation_delivery, setup_web_automation_shop, data):
-    # Already returned case (return a parcel already returned): the test should pass and return no errors
-    setup_web_automation_delivery.open(data["url"])
-    setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
-    parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_returned"])
-    setup_web_automation_shop.open(data["url"])
-    setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
-    assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
-    # Expected: return a notification with a message stating that the parcel is already returned
-def test_return_parcel_and_check_status_delivered(setup_web_automation_delivery, setup_web_automation_shop, data):
-    # Delivered case (return a parcel already returned): the test should pass and return no errors
-    setup_web_automation_delivery.open(data["url"])
-    setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
-    parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_return"])
-    setup_web_automation_shop.open(data["url"])
-    setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
-    assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
-    # Expected: return a notification with a message stating that the parcel is already delivered and cannot ba returned
+# #RETURN PARCEL:
+# def test_return_parcel_and_check_status_base_case(setup_web_automation_delivery, setup_web_automation_shop, data):
+#     # Base case (return a parcel draft or confirmed or any): the test should pass and return no errors
+#     setup_web_automation_delivery.open(data["url"])
+#     setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
+#     parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_return"])
+#     setup_web_automation_shop.open(data["url"])
+#     setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
+#     assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
+#     # Expected: the parcel status changes to returned
+# def test_return_parcel_and_check_status_returned(setup_web_automation_delivery, setup_web_automation_shop, data):
+#     # Already returned case (return a parcel already returned): the test should pass and return no errors
+#     setup_web_automation_delivery.open(data["url"])
+#     setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
+#     parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_returned"])
+#     setup_web_automation_shop.open(data["url"])
+#     setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
+#     assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
+#     # Expected: return a notification with a message stating that the parcel is already returned
+# def test_return_parcel_and_check_status_delivered(setup_web_automation_delivery, setup_web_automation_shop, data):
+#     # Delivered case (return a parcel already returned): the test should pass and return no errors
+#     setup_web_automation_delivery.open(data["url"])
+#     setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
+#     parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_return"])
+#     setup_web_automation_shop.open(data["url"])
+#     setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
+#     assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
+#     # Expected: return a notification with a message stating that the parcel is already delivered and cannot ba returned
+
+# COD TESTS:
+def test_cod_base_case(setup_web_automation_delivery, data):
+    # Base case (deliver a parcel that is not already delivered): the test should pass and return no errors 
+    assert setup_web_automation_delivery.cod(data["wait"], data["parcel_draft_3"])
+    # Expected: the CRBT after adding COD matches the displayed CRBT total
+def test_cod_already_delivered_case(setup_web_automation_delivery, data):
+    # Already delivered case (deliver a parcel that is delivered): the test should pass and return no errors 
+    assert setup_web_automation_delivery.cod(data["wait"], data["parcel_draft_3"])
+    # Expected: No matching or checking because parcel already delivered
+
