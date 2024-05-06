@@ -53,8 +53,12 @@ def data():
         "parcel_draft_1" : int(config['parcels']['parcel_draft_1']),
         "parcel_draft_2" : int(config['parcels']['parcel_draft_2']),
         "parcel_draft_3" : config['parcels']['parcel_draft_3'],
+        "parcel_different_status" : config['parcels']['parcel_different_status'],
+        "parcel_picked" : config['parcels']['parcel_picked_up'],
         "parcel_wrong_barcode": config['parcels']['parcel_wrong_barcode'],
-        "parcel_delivered": config['parcel']['parcel_delivered'],
+        "parcel_delivered": config['parcels']['parcel_delivered'],
+        "parcel_returned": config['parcels']['parcel_returned'],
+        "parcel_return": config['parcels']['parcel_return'],
         "one" : int(config['archive']['one']),
         "many" : int(config['archive']['many']),
         "message" : config['message']['message_input'],
@@ -187,29 +191,81 @@ def test_send_message(setup_web_automation_shop, data):
 def test_pickup_parcel_base_case(setup_web_automation_delivery, data):
     # Base case (pickup a parcel draft or confirmed): the test should pass and return no errors 
     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_draft_3"])
+    # Expected: the parcel status changes to picked up
+def test_pickup_parcel_different_status_case(setup_web_automation_delivery, data):
+    # Base case (pickup a parcel already loaded or picked up): the test should pass and return no errors 
+    assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_different_status"])
+    # Expected: the parcel status changes to picked
 def test_pickup_parcel_wrong_barcode(setup_web_automation_delivery, data):
-    # wrong case (pickup a draft with wrong_barcode): the test should pass and return no errors
+    # wrong case (pickup a draft with wrong_barcode): the test should pass and return an errors
     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_wrong_barcode"])
+    # Expected: return a notification with a message stating that the barcode is wrong
 def test_pickup_parcel_already_delivered(setup_web_automation_delivery, data):
     # Already delivered case (pickup a draft with wrong_barcode): the test should pass and return no errors
     assert setup_web_automation_delivery.pickup_parcel(data["wait"], data["parcel_delivered"])
+    # Expected: return a notification with a message stating that the parcel is already delivered
 
+#LOAD PARCEL:
 def test_load_parcel_base_case(setup_web_automation_delivery, data):
-    # Base case (load a parcel draft or confirmed): the test should pass and return no errors
-    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_draft_3"])
+    # Base case (load a parcel picked): the test should pass and return no errors
+    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_picked"])
+    # Expected: the parcel status changes to loaded
+def test_load_parcel_different_status_case(setup_web_automation_delivery, data):
+    # Base case (pickup a parcel already loaded or picked up): the test should pass and return no errors 
+    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_different_status"]) 
+    # Expected: the parcel status changes to loaded
 def test_load_parcel_wrong_barcode(setup_web_automation_delivery, data):
     # Wrong case (load a parcel with wrong barcode): the test should fail and return errors
-    assert not setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_wrong_barcode"])
+    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_wrong_barcode"])
+    # Expected: return a notification with a message stating that the barcode is wrong
 def test_load_parcel_already_delivered(setup_web_automation_delivery, data):
     # Already delivered case (try to load a parcel that has already been delivered): the test should fail and return errors
-    assert not setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_delivered"])
+    assert setup_web_automation_delivery.load_parcel(data["wait"], data["parcel_delivered"])
+    # Expected: return a notification with a message stating that the parcel is already delivered
 
+#DELIVER PARCEL:
 def test_deliver_parcel_base_case(setup_web_automation_delivery, data):
     # Base case (deliver a parcel draft or confirmed): the test should pass and return no errors
     assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_draft_3"])
+    # Expected: the parcel status changes to delivered
+def test_deliver_parcel_different_status_case(setup_web_automation_delivery, data):
+    # Base case (deliver a parcel picked): the test should pass and return no errors
+    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_different_status"])
+    # Expected: the parcel status changes to delivered
 def test_deliver_parcel_wrong_barcode(setup_web_automation_delivery, data):
     # Wrong case (deliver a parcel with wrong barcode): the test should fail and return errors
-    assert not setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_wrong_barcode"])
+    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_wrong_barcode"])
+    # Expected: return a notification with a message stating that the barcode is wrong
 def test_deliver_parcel_already_delivered(setup_web_automation_delivery, data):
     # Already delivered case (try to deliver a parcel that has already been delivered): the test should fail and return errors
-    assert not setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_delivered"])
+    assert setup_web_automation_delivery.deliver_parcel(data["wait"], data["parcel_delivered"])
+    # Expected: return a notification with a message stating that the parcel is already delivered
+
+#RETURN PARCEL:
+def test_return_parcel_and_check_status_base_case(setup_web_automation_delivery, setup_web_automation_shop, data):
+    # Base case (return a parcel draft or confirmed or any): the test should pass and return no errors
+    setup_web_automation_delivery.open(data["url"])
+    setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
+    parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_return"])
+    setup_web_automation_shop.open(data["url"])
+    setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
+    assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
+    # Expected: the parcel status changes to returned
+def test_return_parcel_and_check_status_returned(setup_web_automation_delivery, setup_web_automation_shop, data):
+    # Already returned case (return a parcel already returned): the test should pass and return no errors
+    setup_web_automation_delivery.open(data["url"])
+    setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
+    parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_returned"])
+    setup_web_automation_shop.open(data["url"])
+    setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
+    assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
+    # Expected: return a notification with a message stating that the parcel is already returned
+def test_return_parcel_and_check_status_delivered(setup_web_automation_delivery, setup_web_automation_shop, data):
+    # Delivered case (return a parcel already returned): the test should pass and return no errors
+    setup_web_automation_delivery.open(data["url"])
+    setup_web_automation_delivery.login(data["email_delivery"], data["password_delivery"])
+    parcel_number = setup_web_automation_delivery.return_parcel(data["wait"], data["parcel_return"])
+    setup_web_automation_shop.open(data["url"])
+    setup_web_automation_shop.login(data["email_shop"], data["password_shop"])
+    assert setup_web_automation_shop.check_status(data["wait"], parcel_number)
+    # Expected: return a notification with a message stating that the parcel is already delivered and cannot ba returned
