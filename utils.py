@@ -9,6 +9,7 @@ import time
 import re
 import os
 
+
 class WebAutomationLibrary:
     def __init__(self, driver=None):
         self.driver = driver or webdriver.Chrome()
@@ -49,7 +50,7 @@ class WebAutomationLibrary:
             self.log.error("login test FAILED")
             return False
 
-    def create_parcel(self, name, phone, address, city, CRBTV, valuev, wait):
+    def create_parcel(self, name, phone, address, city, CRBTV, valuev, wait, delivery_type, CIN):
         self.log.info("Create parcel test started:")
         try:
             
@@ -61,32 +62,51 @@ class WebAutomationLibrary:
             self.driver.get(href_create_parcel)
             main_info = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'modal-content')))
             self.log.info("Creation page found")
-
-            delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Livraison à domicile']")))
+            if delivery_type == "LAD":
+                delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Livraison à domicile']")))
+                self.log.info("Delivery type selected: LAD")
+            elif delivery_type == "LPR":
+                delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Livraison point relais']")))
+                self.log.info("Delivery type selected: LPR")
+            elif delivery_type == "REA":
+                delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Remise en agence']")))
+                self.log.info("Delivery type selected: REA")
             delivery_type_button.click()
-            self.log.info("Delivery type selected")
 
             next_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-value='next']")))
             next_button.click()
             self.log.info("Next button clicked")
 
-            name_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_name' and contains(@class, 'o_address_street')])[1]")))
-            name_input.send_keys(name)
-            self.log.info("Name input filled")
+            if delivery_type != "REA":
+                name_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_name' and contains(@class, 'o_address_street')])[1]")))
+                name_input.send_keys(name)
+                self.log.info("Name input filled")
 
-            phone_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_phone' and contains(@class, 'o_address_street')])[1]")))
-            phone_input.send_keys(phone)
-            self.log.info("Phone input filled")
+                phone_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_phone' and contains(@class, 'o_address_street')])[1]")))
+                phone_input.send_keys(phone)
+                self.log.info("Phone input filled")
 
-            address_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_street' and contains(@class, 'o_address_street')])[1]")))
-            address_input.send_keys(address)
-            self.log.info("Address input filled")
+                address_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_street' and contains(@class, 'o_address_street')])[1]")))
+                address_input.send_keys(address)
+                self.log.info("Address input filled")
 
-            city_input = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//div[@name='destination_city']//input[contains(@class, 'o_input')]")))
-            city_input.send_keys(city)
-            dropdown_option = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//ul[contains(@class, 'ui-autocomplete')]//li/a")))
-            dropdown_option.click()
+                city_input = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//div[@name='destination_city']//input[contains(@class, 'o_input')]")))
+                city_input.send_keys(city)
+                dropdown_option = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//ul[contains(@class, 'ui-autocomplete')]//li/a")))
+                dropdown_option.click()
+            else:
+                name_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[3]/table/tbody/tr[2]/td/div/input[1]")))
+                name_input.send_keys(name)
+                self.log.info("Name input filled")
 
+                phone_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[3]/table/tbody/tr[2]/td/div/input[2]")))
+                phone_input.send_keys(phone)
+                self.log.info("Phone input filled")
+
+                CIN_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[3]/table/tbody/tr[2]/td/div/input[3]")))
+                CIN_input.send_keys(CIN)
+                self.log.info("CIN input filled")
+                
             next_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-value='next']")))
             next_button.click()
             self.log.info("Next button clicked")
@@ -431,7 +451,13 @@ class WebAutomationLibrary:
             pickup_parcel.click()
             self.log.info("Clicked on 'Pickup Parcel' button")
             input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
-            input_field.send_keys(parcel_barcode)
+            if '$' not in parcel_barcode:
+                input_field.send_keys(parcel_barcode)
+            else:
+                parcel_barcode_list = parcel_barcode.split('$')
+                for barcode in parcel_barcode_list:
+                    input_field.send_keys(barcode.strip())
+                    input_field.send_keys("\n")
             self.log.info("Filled the barcode input field")
             confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/div/footer/button[2]/span")))
             confirm.click()
@@ -471,7 +497,13 @@ class WebAutomationLibrary:
             load_parcel.click()
             self.log.info("Clicked on 'Load Parcel' button")
             input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
-            input_field.send_keys(parcel_barcode)
+            if '$' not in parcel_barcode:
+                input_field.send_keys(parcel_barcode)
+            else:
+                parcel_barcode_list = parcel_barcode.split('$')
+                for barcode in parcel_barcode_list:
+                    input_field.send_keys(barcode.strip())
+                    input_field.send_keys("\n")
             self.log.info("Filled the barcode input field")
             confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/div/footer/button[2]/span")))
             confirm.click() 
@@ -513,7 +545,13 @@ class WebAutomationLibrary:
             deliver_parcel.click()
             self.log.info("Clicked on 'Deliver Parcel' button")
             input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
-            input_field.send_keys(parcel_barcode)
+            if '$' not in parcel_barcode:
+                input_field.send_keys(parcel_barcode)
+            else:
+                parcel_barcode_list = parcel_barcode.split('$')
+                for barcode in parcel_barcode_list:
+                    input_field.send_keys(barcode.strip())
+                    input_field.send_keys("\n")
             self.log.info("Filled the barcode input field")
             display = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/main/div/div/div/button/span")))
             display.click()
@@ -564,7 +602,13 @@ class WebAutomationLibrary:
             return_parcel.click()
             self.log.info("Clicked on 'Return Parcel' button")
             input_field = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, "barcode_list_input")))
-            input_field.send_keys(parcel_barcode)
+            if '$' not in parcel_barcode:
+                input_field.send_keys(parcel_barcode)
+            else:
+                parcel_barcode_list = parcel_barcode.split('$')
+                for barcode in parcel_barcode_list:
+                    input_field.send_keys(barcode.strip())
+                    input_field.send_keys("\n")
             self.log.info("Filled the barcode input field")
             confirm = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[6]/div/div/footer/div/footer/button[2]/span")))
             confirm.click() 
@@ -639,4 +683,83 @@ class WebAutomationLibrary:
                 return True
         except Exception as e:
             self.log.error("Error: %s", e)
+            return False
+
+    def fees_check(self, name, phone, address, des_city, pic_city, fees, wait, delivery_type, CIN):
+        self.log.info("Create parcel started:")
+        try:
+            
+            parent_element = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'o_menu_sections')))
+            self.log.info("Parent element found")
+
+            link = parent_element.find_elements(By.TAG_NAME, 'a')[1]
+            href_create_parcel = link.get_attribute('href')
+            self.driver.get(href_create_parcel)
+            main_info = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.CLASS_NAME, 'modal-content')))
+            self.log.info("Creation page found")
+            if delivery_type == "LAD":
+                delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Livraison à domicile']")))
+                self.log.info("Delivery type selected: LAD")
+            elif delivery_type == "LPR":
+                delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Livraison point relais']")))
+                self.log.info("Delivery type selected: LPR")
+            elif delivery_type == "REA":
+                delivery_type_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//option[text()='Remise en agence']")))
+                self.log.info("Delivery type selected: REA")
+            delivery_type_button.click()
+
+            next_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-value='next']")))
+            next_button.click()
+            self.log.info("Next button clicked")
+
+            if delivery_type != "REA":
+                name_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_name' and contains(@class, 'o_address_street')])[1]")))
+                name_input.send_keys(name)
+                self.log.info("Name input filled")
+
+                phone_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_phone' and contains(@class, 'o_address_street')])[1]")))
+                phone_input.send_keys(phone)
+                self.log.info("Phone input filled")
+
+                address_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "(//input[@name='child_street' and contains(@class, 'o_address_street')])[1]")))
+                address_input.send_keys(address)
+                self.log.info("Address input filled")
+
+                destination_city_input = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//div[@name='destination_city']//input[contains(@class, 'o_input')]")))
+                destination_city_input.send_keys(des_city)
+                dropdown_option = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//ul[contains(@class, 'ui-autocomplete')]//li/a")))
+                dropdown_option.click()
+                picking_city_input = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//div[@name='picking_address_id']//input[contains(@class, 'o_input')]")))
+                picking_city_input.clear()
+                # pick = WebDriverWait(self.driver, wait).until(EC.visibility_of_element_located((By.XPATH, "//div[4]/table/tbody/tr[2]/td/div/div/div/input")))
+                # pick.send_keys(pic_city)
+                picking_city_input.send_keys(pic_city)
+                picking_city = WebDriverWait(self.driver, wait).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(.,'Shop 99, %s')]" % pic_city)))
+                picking_city.click()
+
+            else:
+                name_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[3]/table/tbody/tr[2]/td/div/input[1]")))
+                name_input.send_keys(name)
+                self.log.info("Name input filled")
+
+                phone_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[3]/table/tbody/tr[2]/td/div/input[2]")))
+                phone_input.send_keys(phone)
+                self.log.info("Phone input filled")
+
+                CIN_input = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[3]/table/tbody/tr[2]/td/div/input[3]")))
+                CIN_input.send_keys(CIN)
+                self.log.info("CIN input filled")
+                
+            next_button = WebDriverWait(main_info, wait).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-value='next']")))
+            next_button.click()
+            self.log.info("Next button clicked")            
+            fees_displayed= WebDriverWait(main_info, wait).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[9]/div/div/main/div/div/div/div/div[2]/div[5]/table[1]/tbody/tr[6]/td[2]/span"))).text
+            if fees_displayed == fees:
+                self.log.info("Correct combination fees. correct fees: %s = displayed fees %s", fees_displayed, fees)
+                return True
+            else:
+                self.log.info("incorrect combination fees. correct fees: %s != displayed fees %s", fees, fees_displayed)
+                return False
+        except Exception as e:
+            self.log.error("Error creating parcel: %s", str(e))
             return False
