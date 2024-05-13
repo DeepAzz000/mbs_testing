@@ -1,10 +1,10 @@
 # OVERVIEW
 
-This project provides a performing automated tests on mobipreshipement.
+This project is performing automated tests on mobishipement.
 
 # HOW TO USE
 
-Run the following command to execute the tests using pytest:
+Run the following command to execute the tests using the following:
    
    ```bash
 python -m pytest -s testing_main.py
